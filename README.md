@@ -108,4 +108,3 @@ If ElevenLabs credits are exhausted, the system **automatically** switches to "M
 To speed up rendering on Apple Silicon (M1/M2/M3), you can adjust the `video_builder.py` to use `h264_videotoolbox` instead of `libx264`.
 
 ---
-*Developed by Intern Name - 2026*
