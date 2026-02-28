@@ -1,0 +1,208 @@
+Build a Python-based automated reel generator with the following strict
+specifications.
+
+This is a deterministic media pipeline. Do not simplify logic.
+
+🎯 OBJECTIVE
+
+Given:
+
+A user-provided script (~30 seconds)
+
+A fixed intro image (3 seconds)
+
+A fixed outro image (3 seconds)
+
+A list of middle images
+
+The system must:
+
+Generate voiceover from the script using a TTS API.
+
+Measure exact audio duration.
+
+Distribute timing equally across middle images.
+
+Generate a video using FFmpeg.
+
+Add synced captions.
+
+Ensure precise synchronization between:
+
+Intro
+
+Voiceover
+
+Image durations
+
+Captions
+
+Outro
+
+Final video duration must be:
+
+3 (intro) + voice_duration + 3 (outro)
+
+📥 INPUT FORMAT
+
+The system should accept:
+
+{ “script”: str, “intro_image”: str, “outro_image”: str,
+“middle_images”: List[str], “voice_settings”: { “voice_id”: str,
+“speed”: float } }
+
+⚙️ STEP 1 — VOICEOVER
+
+Use a TTS API (design as pluggable).
+
+Save as voiceover.mp3.
+
+Measure exact duration using ffprobe or librosa.
+
+Store duration as float (no rounding).
+
+⚙️ STEP 2 — TIMING LOGIC
+
+Let:
+
+intro_duration = 3 outro_duration = 3 middle_duration = voice_duration
+image_count = len(middle_images) per_image_duration = middle_duration /
+image_count
+
+Do NOT round values.
+
+⚙️ STEP 3 — CAPTION GENERATION
+
+Generate captions from script.
+
+Requirements:
+
+Split script into logical sentence chunks.
+
+Distribute captions evenly across voice_duration.
+
+Caption timing must:
+
+Start at 3 seconds
+
+End at 3 + voice_duration
+
+Each caption must have:
+
+start_time
+
+end_time
+
+text
+
+Output captions in .srt format.
+
+Example:
+
+1 00:00:03,000 –> 00:00:07,000 Breaking news today…
+
+2 00:00:07,000 –> 00:00:11,000 Markets show strong growth…
+
+Caption timing must align proportionally across the voice duration.
+
+Do NOT estimate speech timing per word. Just distribute evenly across
+chunks.
+
+⚙️ STEP 4 — VIDEO GENERATION
+
+Use FFmpeg to:
+
+Create intro clip (3s from intro image)
+
+Create middle clips:
+
+Each image duration = per_image_duration
+
+Apply subtle zoom/pan effect
+
+Create outro clip (3s)
+
+Concatenate all clips
+
+Add voiceover with 3 second delay
+
+Burn captions into video
+
+Audio must start at 3 seconds using adelay=3000|3000.
+
+⚙️ STEP 5 — CAPTION BURN-IN
+
+Use FFmpeg subtitles filter:
+
+-vf subtitles=captions.srt
+
+Caption styling:
+
+Font size: medium-large
+
+White text
+
+Black shadow
+
+Bottom center alignment
+
+🧠 EDGE CASES TO HANDLE
+
+No middle images → raise error
+
+Voice duration < 3 seconds → reject
+
+Image count too large → ensure per_image_duration > 0.5s minimum
+
+TTS failure → retry once
+
+FFmpeg failure → raise structured error
+
+📂 PROJECT STRUCTURE /reel_generator main.py tts.py video_builder.py
+caption_generator.py utils.py /temp /output
+
+📤 FINAL OUTPUT
+
+The system should output:
+
+{ “voice_duration”: float, “per_image_duration”: float,
+“final_video_duration”: float, “output_file”: “final_reel.mp4” }
+
+No console prints except structured logging.
+
+🚫 DO NOT
+
+Do not estimate duration from text length.
+
+Do not modify the script.
+
+Do not hardcode durations except intro/outro.
+
+Do not use magic numbers.
+
+Do not assume FPS — explicitly define it.
+
+Do not use external video editing libraries (only FFmpeg via
+subprocess).
+
+🎥 OPTIONAL IMPROVEMENT (IF IMPLEMENTING CLEANLY)
+
+Make zoom direction alternate per image for dynamic feel.
+
+END OF SPECIFICATION
+
+Generate full Python implementation with:
+
+Clean modular code
+
+Clear function boundaries
+
+Error handling
+
+Logging
+
+FFmpeg command construction
+
+Comments explaining synchronization logic
+
+Do not simplify architecture.
